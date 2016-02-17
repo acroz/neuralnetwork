@@ -299,14 +299,14 @@ class NeuralNetwork(object):
             
             # Compute and store gradients for this layer
             grad = layer.gradient(delta, res.x, lmbda)
-            gradient_parts.append(grad.ravel())
+            gradient_parts.append(grad)
             
             # Backpropagate errors
             delta = layer.backward(delta, res_prev.z)
         
-        # Compute and store gradients for final layer
+        # Compute and store gradients for first layer
         grad = self._layers[0].gradient(delta, results[0].x, lmbda)
-        gradient_parts.append(grad.ravel())
+        gradient_parts.append(grad)
 
         # Stick gradients together in forward order
         gradient_flat = np.concatenate(gradient_parts[::-1])
