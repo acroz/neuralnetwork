@@ -1,0 +1,8 @@
+# Python bytecode files
+*.pyc
+
+# Editor files
+.*.swp
+
+# Data files
+*-ubyte.gz
