@@ -156,7 +156,7 @@ class NeuralNetworkLayer(object):
 
         .. math::
 
-            \\delta^l = (w^{l+1}\\cdot\delta^{l+1}) \\circ \\sigma^\\prime(z^l)
+            \\delta^l = (w^{l+1}\\cdot\\delta^{l+1}) \\circ \\sigma^\\prime(z^l)
 
         where :math:`w^{l+1}` are the weights of layer l+1,
         :math:`\\sigma^\\prime` is the first derivative of the sigmoid function
@@ -164,7 +164,7 @@ class NeuralNetworkLayer(object):
 
         .. math::
 
-            z^l = w^l \cdot x^l + b^l
+            z^l = w^l \\cdot x^l + b^l
 
         :math:`\\circ` represents the Hadamard (element-wise) product.
 
@@ -234,7 +234,7 @@ class NeuralNetworkLayer(object):
         .. math::
             
             \\frac{\\partial g}{\\partial w_{jk}^l}
-                = \\frac{1}{m} \sum_{i=1}^m \\left[
+                = \\frac{1}{m} \\sum_{i=1}^m \\left[
                     \\frac{\\partial g}{\\partial w_{jk}^l}
                   \\right]_i
                 + \\frac{\\lambda}{m} w_{jk}^l
@@ -242,7 +242,7 @@ class NeuralNetworkLayer(object):
         .. math::
             
             \\frac{\\partial g}{\\partial b_j^l}
-                = \\frac{1}{m} \sum_{i=1}^m \\left[
+                = \\frac{1}{m} \\sum_{i=1}^m \\left[
                     \\frac{\\partial g}{\\partial b_j^l}
                   \\right]_i
 
