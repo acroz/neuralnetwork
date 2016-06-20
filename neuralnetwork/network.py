@@ -2,7 +2,6 @@
 import numpy as np
 from scipy.optimize import minimize
 from .layer import NeuralNetworkLayer
-from .categorymapper import CategoryMapper
 
 def uniform_initializer(shape, epsilon=0.12):
     """
@@ -41,7 +40,7 @@ class NeuralNetwork(object):
     >>> predictions = net.predict(test_features)
     """
 
-    def __init__(self, design):
+    def __init__(self, design, labels, initializer=uniform_initializer):
       
         # Assemble the layers
         self._layers = []
@@ -51,8 +50,12 @@ class NeuralNetwork(object):
         # Store some useful attributes about the network
         self._inputs  = design[0]
         self._outputs = design[-1]
+        
+        self.labels = np.array(labels)
+        assert len(self.labels) == self._outputs
 
-        self._mapper = CategoryMapper(self._outputs)
+        self.initializer = initializer
+        self.initialize_parameters()
     
     @property
     def parameters(self):
@@ -81,17 +84,11 @@ class NeuralNetwork(object):
             # Get the starting point of the next layer
             start += length
 
-    def initialize_parameters(self, func=uniform_initializer):
+    def initialize_parameters(self):
         """
-        Initialise the network's parameters using the provided function.
-
-        Parameters
-        ----------
-        func : callable
-            Callable returning an array_like of initial parameter values when
-            given the number of parameters as a single argument
+        Initialize the network's parameters.
         """
-        self.parameters = np.array(func(self.parameters.shape))
+        self.parameters = np.array(self.initializer(self.parameters.shape))
 
     def forward(self, input_activations):
         """
@@ -147,7 +144,7 @@ class NeuralNetwork(object):
         activations = self.forward(features)
 
         # Recover original category labels
-        return self._mapper.labels(activations)
+        return self.labels[activations.argmax(axis=0)]
 
     def accuracy(self, features, labels):
         """
@@ -256,7 +253,7 @@ class NeuralNetwork(object):
         """
         Convenience function to map labels to activations and compute the cost.        
         """
-        activations = self._mapper.activations(labels)
+        activations = labels == self.labels[:,np.newaxis]
         return self.cost(features, activations, *args, **kwargs)
     
     def train(self, features, labels, lmbda=0.0, optimiser='CG', retconv=False,
@@ -282,14 +279,8 @@ class NeuralNetwork(object):
             validation set
         """
 
-        # Store a list of unique categories
-        self._mapper.register(labels)
-
         # Evaluate a matrix of output activations for training
-        activations = self._mapper.activations(labels)
-        
-        # Randomly initialise the parameters of the network
-        self.initialize_parameters()
+        activations = labels == self.labels[:,np.newaxis]
 
         # Cost function for optimiser
         def cost(params):
@@ -307,7 +298,8 @@ class NeuralNetwork(object):
             return_data.append(row)
 
         if retconv:
-            callbacks.append(lambda: self.cost(features, activations, labels))
+            callbacks.append(lambda: self.cost(features, activations, lmbda))
+
         if retaccur:
             callbacks.append(lambda: (self.accuracy(features, labels),
                                       self.accuracy(*retaccur)))
