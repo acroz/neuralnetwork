@@ -358,21 +358,23 @@ class NeuralNetwork(object):
             return self.cost(features, activations, lmbda, gradient=True)
         
         # Set up any relevant callback functions
-        callback = None
+        return_data = []
+        callbacks = []
+        def callback(params):
+            self.parameters = params
+            row = []
+            for cb in callbacks:
+                row.append(cb())
+            return_data.append(row)
+
         if retconv:
-            convergence = []
-            def callback(params):
-                self.parameters = params
-                convergence.append(self.cost(features, activations, lmbda))
-        if retaccur is not None:
-            convergence = []
-            def callback(params):
-                self.parameters = params
-                convergence.append((self.accuracy(features, labels),
-                                    self.accuracy(*retaccur)))
-        if callback is not None:
-            # Initial value
-            callback(self.parameters)
+            callbacks.append(lambda: self.cost(features, activations, labels))
+        if retaccur:
+            callbacks.append(lambda: (self.accuracy(features, labels),
+                                      self.accuracy(*retaccur)))
+        
+        # Call callbacks once before beginning optimisation
+        callback(self.parameters)
         
         # Train the network
         result = minimize(cost, self.parameters, method=optimiser, jac=True,
@@ -381,5 +383,5 @@ class NeuralNetwork(object):
         # Set network parameters to optimal values
         self.parameters = result.x
         
-        if retconv or retaccur is not None:
-            return np.array(convergence)
+        if len(return_data) > 0:
+            return return_data
