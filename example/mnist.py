@@ -139,7 +139,7 @@ def display(imagedata, labels=None, nrows=5, ncols=6):
             if labels is not None:
                 pyplot.text(0.95, 0.03,
                             str(labels[iimage]),
-                            fontsize=14, color='greenyellow',
+                            fontsize=14, color='white',
                             horizontalalignment='right',
                             verticalalignment='bottom',
                             transform=ax.transAxes)
