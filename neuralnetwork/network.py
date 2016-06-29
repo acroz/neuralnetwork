@@ -292,17 +292,17 @@ class NeuralNetwork(object):
         callbacks = []
         def callback(params):
             self.parameters = params
-            row = []
-            for cb in callbacks:
-                row.append(cb())
-            return_data.append(row)
+            for i, cb in enumerate(callbacks):
+                return_data[i].append(cb())
 
         if retconv:
             callbacks.append(lambda: self.cost(features, activations, lmbda))
+            return_data.append([])
 
         if retaccur:
             callbacks.append(lambda: (self.accuracy(features, labels),
                                       self.accuracy(*retaccur)))
+            return_data.append([])
         
         # Call callbacks once before beginning optimisation
         callback(self.parameters)
@@ -313,6 +313,9 @@ class NeuralNetwork(object):
         
         # Set network parameters to optimal values
         self.parameters = result.x
-        
-        if len(return_data) > 0:
+       
+        return_data = [np.array(dat) for dat in return_data]
+        if len(return_data) == 1:
+            return return_data[0]
+        elif len(return_data) > 1:
             return return_data
