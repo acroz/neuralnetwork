@@ -3,30 +3,63 @@ Implementation of a neural network layer.
 """
 
 import numpy as np
+from scipy.special import expit as sigmoid
 
-def sigmoid(z):
-    """
-    The sigmoid function.
+try:
+    import numexpr
 
-    The sigmoid function is defined as:
+    def sigmoid(z):
+        """
+        The sigmoid function.
+    
+        The sigmoid function is defined as:
+    
+        .. math::
+    
+            \\sigma(z) = \\frac{1}{1 + e^{-z}} 
+        """
+        return numexpr.evaluate('1/(1+exp(-z))')
+    
+    def sigmoid_prime(z):
+        """
+        The first derivative of the sigmoid function.
+    
+        The first derivative can be computed by: 
+    
+        .. math::
+    
+            \\sigma^\\prime(z) = \\sigma(z) (1 - \\sigma(z))
+        """
+        sig = sigmoid(z)
+        return numexpr.evaluate('sig * (1 - sig)')
 
-    .. math::
+except ImportError:
+    # numexpr speedup not critical - fall back to scipy
 
-        \\sigma(z) = \\frac{1}{1 + e^{-z}} 
-    """
-    return 1.0 / (1.0 + np.exp(-z))
-
-def sigmoid_prime(z):
-    """
-    The first derivative of the sigmoid function.
-
-    The first derivative can be computed by: 
-
-    .. math::
-
-        \\sigma^\\prime(z) = \\sigma(z) (1 - \\sigma(z))
-    """
-    return sigmoid(z) * (1 - sigmoid(z))
+    def sigmoid(z):
+        """
+        The sigmoid function.
+    
+        The sigmoid function is defined as:
+    
+        .. math::
+    
+            \\sigma(z) = \\frac{1}{1 + e^{-z}} 
+        """
+        return 1.0 / (1.0 + np.exp(-z))
+    
+    def sigmoid_prime(z):
+        """
+        The first derivative of the sigmoid function.
+    
+        The first derivative can be computed by: 
+    
+        .. math::
+    
+            \\sigma^\\prime(z) = \\sigma(z) (1 - \\sigma(z))
+        """
+        sig = sigmoid(z)
+        return sig * (1.0 - sig)
 
 class LayerResult(object):
     """
@@ -195,7 +228,8 @@ class NeuralNetworkLayer(object):
         
         # Compute the deltas of the input layer using its provided augmented
         # inputs and this layer's deltas
-        return np.dot(self._weights.T, delta) * sigmoid_prime(z_layerm1)
+        weights_T = np.ascontiguousarray(self._weights.T)
+        return np.dot(weights_T, delta) * sigmoid_prime(z_layerm1)
 
     def gradient(self, delta, a_input, lmbda=0.0):
         """
@@ -273,7 +307,9 @@ class NeuralNetworkLayer(object):
 
         # Compute the gradient of the cost function wrt the weights, averaged
         # over all the given samples
-        grad_weights = np.dot(delta, a_input.T) / n_samples
+        # Ensure contiguous for efficient dot
+        a_input_T = np.ascontiguousarray(a_input.T)
+        grad_weights = np.dot(delta, a_input_T) / n_samples
 
         # Add on the gradient of the regularisation term
         if lmbda > 0.0:
