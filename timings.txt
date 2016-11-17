@@ -1,0 +1,10 @@
+1 130.48s user 12.72s system 99% cpu 2:23.22 total
+2 131.98s user 27.60s system 196% cpu 1:21.18 total
+3 134.30s user 35.82s system 265% cpu 1:04.11 total
+4 130.98s user 42.23s system 338% cpu 51.223 total
+5 140.58s user 54.13s system 413% cpu 47.079 total
+6 142.27s user 61.29s system 475% cpu 42.806 total
+7 149.51s user 70.87s system 544% cpu 40.447 total
+8 162.72s user 80.61s system 616% cpu 39.455 total
+9 157.95s user 91.49s system 664% cpu 37.513 total
+10 172.11s user 106.76s system 737% cpu 37.810 total
